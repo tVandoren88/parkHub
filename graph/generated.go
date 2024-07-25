@@ -64,6 +64,7 @@ type ComplexityRoot struct {
 		CreateFlight     func(childComplexity int, input model.NewFlight) int
 		CreateFlightName func(childComplexity int, input model.NewFlightName) int
 		GetFlightDetails func(childComplexity int, findName string) int
+		InsertFlights    func(childComplexity int, objects []*model.NewFlight) int
 		UpdateFlight     func(childComplexity int, id string, edits model.EditFlight) int
 	}
 
@@ -78,6 +79,7 @@ type MutationResolver interface {
 	CreateFlightName(ctx context.Context, input model.NewFlightName) (*model.FlightName, error)
 	UpdateFlight(ctx context.Context, id string, edits model.EditFlight) (*model.Flight, error)
 	GetFlightDetails(ctx context.Context, findName string) (*model.Flight, error)
+	InsertFlights(ctx context.Context, objects []*model.NewFlight) ([]*model.Flight, error)
 }
 type QueryResolver interface {
 	Flights(ctx context.Context) ([]*model.Flight, error)
@@ -187,6 +189,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.GetFlightDetails(childComplexity, args["findName"].(string)), true
+
+	case "Mutation.insertFlights":
+		if e.complexity.Mutation.InsertFlights == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_insertFlights_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.InsertFlights(childComplexity, args["objects"].([]*model.NewFlight)), true
 
 	case "Mutation.updateFlight":
 		if e.complexity.Mutation.UpdateFlight == nil {
@@ -383,6 +397,21 @@ func (ec *executionContext) field_Mutation_getFlightDetails_args(ctx context.Con
 		}
 	}
 	args["findName"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_insertFlights_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []*model.NewFlight
+	if tmp, ok := rawArgs["objects"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("objects"))
+		arg0, err = ec.unmarshalNNewFlight2ᚕᚖgithubᚗcomᚋtvandoren88ᚋparkHubᚋgraphᚋmodelᚐNewFlightᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["objects"] = arg0
 	return args, nil
 }
 
@@ -1023,6 +1052,71 @@ func (ec *executionContext) fieldContext_Mutation_getFlightDetails(ctx context.C
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_getFlightDetails_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_insertFlights(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_insertFlights(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().InsertFlights(rctx, fc.Args["objects"].([]*model.NewFlight))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Flight)
+	fc.Result = res
+	return ec.marshalNFlight2ᚕᚖgithubᚗcomᚋtvandoren88ᚋparkHubᚋgraphᚋmodelᚐFlightᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_insertFlights(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Flight_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Flight_name(ctx, field)
+			case "departureTime":
+				return ec.fieldContext_Flight_departureTime(ctx, field)
+			case "arrivalTime":
+				return ec.fieldContext_Flight_arrivalTime(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Flight", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_insertFlights_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3311,6 +3405,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "insertFlights":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_insertFlights(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3908,6 +4009,28 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 func (ec *executionContext) unmarshalNNewFlight2githubᚗcomᚋtvandoren88ᚋparkHubᚋgraphᚋmodelᚐNewFlight(ctx context.Context, v interface{}) (model.NewFlight, error) {
 	res, err := ec.unmarshalInputNewFlight(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNNewFlight2ᚕᚖgithubᚗcomᚋtvandoren88ᚋparkHubᚋgraphᚋmodelᚐNewFlightᚄ(ctx context.Context, v interface{}) ([]*model.NewFlight, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.NewFlight, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNNewFlight2ᚖgithubᚗcomᚋtvandoren88ᚋparkHubᚋgraphᚋmodelᚐNewFlight(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNNewFlight2ᚖgithubᚗcomᚋtvandoren88ᚋparkHubᚋgraphᚋmodelᚐNewFlight(ctx context.Context, v interface{}) (*model.NewFlight, error) {
+	res, err := ec.unmarshalInputNewFlight(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNNewFlightName2githubᚗcomᚋtvandoren88ᚋparkHubᚋgraphᚋmodelᚐNewFlightName(ctx context.Context, v interface{}) (model.NewFlightName, error) {

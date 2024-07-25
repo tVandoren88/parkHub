@@ -38,6 +38,7 @@ func Migrate() {
 		"mysql",
 		driver,
 	)
+	m.Force(1)
 	m.Down()
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatal(err)

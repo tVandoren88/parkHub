@@ -72,6 +72,16 @@ func (r *mutationResolver) GetFlightDetails(ctx context.Context, findName string
 	return nil, gqlerror.Errorf("Flight Not Found")
 }
 
+// InsertFlights is the resolver for the insertFlights field.
+func (r *mutationResolver) InsertFlights(ctx context.Context, objects []*model.NewFlight) ([]*model.Flight, error) {
+	var results []*model.Flight
+	for _, input := range objects {
+		newFLight, _ := r.CreateFlight(ctx, *input)
+		results = append(results, newFLight)
+	}
+	return results, nil
+}
+
 // Flights is the resolver for the flights field.
 func (r *queryResolver) Flights(ctx context.Context) ([]*model.Flight, error) {
 	var resFlights []*model.Flight
