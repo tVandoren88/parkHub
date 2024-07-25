@@ -1,0 +1,43 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Flight {
+  id: ID!
+  name: String!
+  departureTime: String!
+  arrivalTime: String!
+}
+
+type FlightName {
+  id: ID!
+  flightId: ID!
+  name: String!
+}
+
+type Query {
+  flights: [Flight!]!
+  flightNames: [FlightName!]!
+}
+input NewFlight {
+  name: String!
+  departureTime: String!
+  arrivalTime: String!
+}
+input NewFlightName{
+  flightId: ID!
+  name: String!
+}
+input EditFlight{
+  name: String
+  departureTime: String
+  arrivalTime: String
+
+}
+
+type Mutation {
+  createFlight(input: NewFlight!): Flight!
+  createFlightName(input: NewFlightName!): FlightName!
+  updateFlight(id: ID!, edits: EditFlight!): Flight!
+  getFlightDetails(findName:String!): Flight!
+}
