@@ -40,3 +40,72 @@ FlightID 1,5,10
 Things I would like to add is more error checking with arrival and departure times
 I would add created at dates in the flight names and use that for a chronological history
 
+Interacting with the API
+
+CREATE A FLIGHT
+    mutation createFlight{
+        createFlight(input: { name: "test", arrivalTime: "2012-12-12", departureTime: "2012-12-11"}){
+            id
+            name
+            arrivalTime
+            departureTime
+        }
+    }
+
+FIND ALL FLIGHTS
+
+query findFligths {
+  flights{
+    id
+    name
+    departureTime
+    arrivalTime
+  }
+}
+
+UPDATE FLIGHT
+
+mutation updateFlight{
+  updateFlight(id: "5", edits: {name: "new3"}){
+    id
+    name
+    arrivalTime
+    departureTime
+  }
+
+}
+
+INSERT MULTIPLE FLIGHTS
+mutation {
+  insertFlights(
+    objects: [
+      {name: "flight10", departureTime: "2012-12-20", arrivalTime: "2012-12-21"},
+
+      {name: "flight20", departureTime: "2012-12-20", arrivalTime: "2012-12-21"},
+    ]
+  ){
+    id
+    name
+    arrivalTime
+    departureTime
+  }
+}
+
+FIND ALL NAMES USED
+query findNames {
+  flightNames {
+    id
+    flightId
+    name
+  }
+}
+
+FIND FLIGHT BY NAME
+mutation FlightDetails{
+  getFlightDetails(findName: "test"){
+    id
+    name
+    arrivalTime
+    departureTime
+  }
+}
